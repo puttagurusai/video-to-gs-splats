@@ -38,6 +38,9 @@ Windows laptop with a 4 GB GPU, with no Linux, no WSL and no C++/CUDA compiler.
 
 ```
 3d scene reconstruction 2\
+|-- setup_tools.py / .bat    One-time setup: downloads the third-party tools into tools\ and installs the Python packages.
+|-- requirements.txt         Python packages (system Python) with the tested versions.
+|-- requirements-da3.txt     Extra packages for the Depth Anything 3 virtual environment.
 |-- run_video_to_splat.bat   Launcher: every setting at the top with a comment beside it. Double-click to run.
 |-- README.md                This file.
 |-- RUNLOG.md                Versions, model hashes, commands and every measured result (reproducibility log).
@@ -118,16 +121,41 @@ Not needed: a CUDA toolkit, Visual Studio / MSVC, WSL, Docker, gsplat, xformers,
 The project folder already contains everything above on this laptop. Use this section to rebuild on another PC or after
 deleting `tools\`. Record anything you change in `RUNLOG.md`.
 
+### Automatic setup (recommended)
+Install Python 3.13 (python.org) and, for the mesh mode only, Blender 5.1 yourself. Then, from this folder:
+```
+python setup_tools.py --check       # what is installed / missing (changes nothing)
+python setup_tools.py --dry-run     # what would be downloaded (changes nothing)
+python setup_tools.py               # installs what is missing; lists the downloads and asks first (--yes skips the question)
+```
+(or double-click `setup_tools.bat`; it accepts the same options). It installs, in this order: the Python packages from
+`requirements.txt` (`deps`), Brush (`brush`), COLMAP CPU build (`colmap`), the Depth Anything 3 source at the pinned
+commit (`da3-src`), its virtual environment with `requirements-da3.txt` (`da3-venv`), the DA3-BASE weights
+(`da3-model`) and the two Depth-Anything-V2 helper models (`dav2`). Use `--only` / `--skip` to pick components,
+`--with-colmap-cuda` for the optional CUDA build, `--force` to reinstall (old folders are renamed, never deleted).
+Downloads come only from the pinned GitHub release / commit URLs and Hugging Face repos; Brush, COLMAP and the DA3 weights
+are checked against the recorded SHA-256 before use. Total download is several GB (PyTorch alone is large): check free disk first.
+
+Tested: `--check` on this laptop reports everything present with matching package versions, and `--dry-run` and the
+helper functions (archive layout, hash check, Hugging Face cache layout) were tested offline. **A real install on a
+clean machine has not been run yet**, so if a step fails, the manual steps below are the reference. The helper models
+(`dav2`) are written into the standard Hugging Face cache (outside the project folder), because the scripts load them
+from there by name.
+
+### Manual setup (what the script automates)
+
 1. **Python 3.13 and packages.** Install Python, then PyTorch 2.7.1 with CUDA 11.8 wheels from pytorch.org, then:
    ```
-   pip install numpy scipy opencv-python pycolmap transformers scikit-image trimesh pillow huggingface_hub safetensors
+   python -m pip install -r requirements.txt
    ```
+   (`requirements.txt` pins the tested versions and adds the PyTorch CUDA 11.8 index.)
    Use the versions in the table above for an identical setup. This setup runs numpy 2.x; DA3's upstream `numpy<2` pin is
    ignored on purpose (it worked here).
 2. **COLMAP 4.2.1.** Download the Windows release from <https://github.com/colmap/colmap/releases> and unpack it so that
    `tools\colmap-cpu\bin\colmap.exe` exists (the project uses a CPU-only build; a CUDA build can sit in
-   `tools\colmap-cuda`, but on this laptop its GPU path aborts with exit code 0xC0000409). The exact release asset
-   names used here were not recorded; check `colmap help` prints `4.2.1`.
+   `tools\colmap-cuda`, but on this laptop its GPU path aborts with exit code 0xC0000409). Release assets of 4.2.1:
+   `colmap-x64-windows-nocuda.zip` (CPU) and `colmap-x64-windows-cuda.zip`; which one this laptop's copy came from was not
+   recorded, but the CPU copy reports "4.2.1 ... without GPU support", matching the nocuda asset. `colmap help` should print `4.2.1`.
 3. **Brush v0.3.0.** Download from <https://github.com/ArthurBrussee/brush/releases> and place `brush_app.exe`, its
    licence and README in `tools\brush\`. Recorded zip SHA-256: `b68e3e9cf052d51bf3ee30776fa5a364de7f2ba13b58443128ff797bb7bcfcd6`.
    `tools\brush\brush_app.exe --version` should print `brush-cli 0.3.0`.
@@ -136,7 +164,7 @@ deleting `tools\`. Record anything you change in `RUNLOG.md`.
    git clone https://github.com/ByteDance-Seed/Depth-Anything-3 tools\da3_src
    git -C tools\da3_src checkout 3d835ec1a5802d64a8b8b15f817a1ab54809bfe4
    python -m venv --system-site-packages tools\venv_da3
-   tools\venv_da3\Scripts\python.exe -m pip install addict==2.4.0 omegaconf==2.4.0 moviepy==1.0.3 evo==1.38.1 plyfile==1.1.5
+   tools\venv_da3\Scripts\python.exe -m pip install -r requirements-da3.txt
    ```
    Pin numpy and torch while installing (for example `-c constraints.txt` containing `numpy==2.3.5` and
    `torch==2.7.1+cu118`) so pip does not replace them.
@@ -393,6 +421,8 @@ Experiments and evaluation:
 * The Brush GPU utilisation is unmeasured (only peak memory was sampled).
 * The reason COLMAP's CUDA build crashes on this laptop is unknown.
 * `parallel_match.py` and the other speed-ups in section 8 are not tested.
+* `setup_tools.py` has not done a real install on a clean machine; `requirements.txt` was not tested on a clean machine
+  either (it pins the versions found on the dev laptop, whose Python also carries packages from other projects).
 * Visual realism "80 %" is judged by held-out SSIM and by eye; the mouse clip reaches GOOD, the hotel clip only FAIR.
 
 ---

@@ -1,0 +1,11 @@
+# Extra packages for the Depth Anything 3 virtual environment (tools\venv_da3, created with --system-site-packages so
+# it reuses the torch/numpy from requirements.txt). setup_tools.py installs these with numpy and torch pinned by a
+# constraints file so pip cannot replace them. Versions are the ones this project was tested with.
+#
+# Deliberately NOT installed (not needed for inference; xformers/open3d/e3nn have no easy Windows wheels here):
+#   xformers, open3d, e3nn, gsplat.  DA3's own requirements.txt pins numpy<2; that pin is ignored on purpose.
+addict==2.4.0
+omegaconf==2.4.0
+moviepy==1.0.3
+evo==1.38.1
+plyfile==1.1.5

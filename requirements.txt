@@ -1,0 +1,24 @@
+# Python packages for the system Python 3.13 (install with:  python -m pip install -r requirements.txt
+# or let  python setup_tools.py  do it). Versions are the ones this project was TESTED with (see RUNLOG.md);
+# pip resolves the sub-dependencies. NOT yet verified on a clean machine.
+#
+# PyTorch with CUDA 11.8 wheels comes from the PyTorch index below (needs an NVIDIA GPU + driver; the GPU stages
+# also work with other CUDA builds, but only cu118 was tested).
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch==2.7.1+cu118
+torchvision==0.22.1+cu118
+
+numpy==2.3.5
+scipy==1.18.0
+opencv-python==4.13.0.92
+pillow==12.1.1
+scikit-image==0.26.0
+trimesh==4.12.2
+pycolmap==4.2.1
+transformers==4.46.1
+huggingface_hub==0.36.2
+safetensors==0.8.0
+einops==0.8.2
+imageio==2.37.4
+tqdm
+PyYAML==6.0.3
